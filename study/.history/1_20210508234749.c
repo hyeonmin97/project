@@ -24,12 +24,10 @@ int main(void)
     wiringPiI2CWriteReg8(fd, PWR_MGMT_1, 0);
     while(1){
         GyX = (wiringPiI2CReadReg8(fd, GYRO_XOUT_H) & 0xFF) << 8;
-        GyX |= wiringPiI2CReadReg8(fd, GYRO_XOUT_L) & 0xFF;
+        GyX |= wiringPiI2CreadReg8(fd, GYRO_XOUT_L) & 0xFF;
         GyY = (wiringPiI2CReadReg8(fd, GYRO_YOUT_H) & 0xFF) << 8;
-        GyY |= wiringPiI2CReadReg8(fd, GYRO_YOUT_L) & 0xFF;
+        GyY |= wiringPiI2CreadReg8(fd, GYRO_YOUT_L) & 0xFF;
         GyZ = (wiringPiI2CReadReg8(fd, GYRO_ZOUT_H) & 0xFF) << 8;
-        GyZ |= wiringPiI2CReadReg8(fd, GYRO_ZOUT_L) & 0xFF;
-
-        printf("Gyx : %6d | Gyy : %6d | Gyz : %6d\n", GyX, GyY, GyZ);
+        GyZ |= wiringPiI2CreadReg8(fd, GYRO_ZOUT_L) & 0xFF;
     }
 }

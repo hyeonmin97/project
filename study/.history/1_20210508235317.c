@@ -30,6 +30,6 @@ int main(void)
         GyZ = (wiringPiI2CReadReg8(fd, GYRO_ZOUT_H) & 0xFF) << 8;
         GyZ |= wiringPiI2CReadReg8(fd, GYRO_ZOUT_L) & 0xFF;
 
-        printf("Gyx : %6d | Gyy : %6d | Gyz : %6d\n", GyX, GyY, GyZ);
+        printf("Gyx : %6d | Gyy : %6d | Gyz : %6d", GyX, GyY, GyZ);
     }
 }
