@@ -54,14 +54,14 @@ int main(void)
         return 0;
     }
 
-    sprintf(delete, "truncate test");//테이블의 데이터 삭제 구문
+    sprintf(delete, "truncate test");
     printf("mysql open\n");
 
     while (1)
     {
         if (num > 200)
         {
-            mysql_query(mysql1, delete);//데이터 삭제 실행
+            mysql_query(mysql1, delete);
             num = 0;
         }
         GyX = (wiringPiI2CReadReg8(fd, GYRO_XOUT_H) & 0xFF) << 8;

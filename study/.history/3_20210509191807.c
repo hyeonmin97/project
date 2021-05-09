@@ -54,16 +54,10 @@ int main(void)
         return 0;
     }
 
-    sprintf(delete, "truncate test");//테이블의 데이터 삭제 구문
+    sprintf(delete, "insert into test values(%d, %.2f, %.2f)", num, angleAcX, angleAcY);
     printf("mysql open\n");
-
     while (1)
     {
-        if (num > 200)
-        {
-            mysql_query(mysql1, delete);//데이터 삭제 실행
-            num = 0;
-        }
         GyX = (wiringPiI2CReadReg8(fd, GYRO_XOUT_H) & 0xFF) << 8;
         GyX |= wiringPiI2CReadReg8(fd, GYRO_XOUT_L) & 0xFF;
         GyY = (wiringPiI2CReadReg8(fd, GYRO_YOUT_H) & 0xFF) << 8;
@@ -82,13 +76,16 @@ int main(void)
         angleAcY = atan(-(double)AcX / sqrt(pow(AcY, 2) + pow(AcZ, 2)));
         angleAcY *= RADIAN_TO_DEGREE;
 
-        printf("num %5d\t angle x : %7.2f\t angle Y : %7.2f\n",num, angleAcX, angleAcY);
+        printf("angle x : %.2f\t angle Y : %.2f\n", angleAcX, angleAcY);
         sprintf(query, "insert into test values(%d, %.2f, %.2f)",num, angleAcX, angleAcY);
         if (mysql_query(mysql1, query))
         {
             fprintf(stderr, "%s\n", mysql_error(mysql1));
             printf("write dberror\n");
         }
-        num++;
+        if(num > 100){
+            mysql_query(mysql1, delete);
+            num = 0;
+        }
     }
 }

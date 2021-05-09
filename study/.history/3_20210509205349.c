@@ -61,7 +61,7 @@ int main(void)
     {
         if (num > 200)
         {
-            mysql_query(mysql1, delete);//데이터 삭제 실행
+            mysql_query(mysql1, delete);
             num = 0;
         }
         GyX = (wiringPiI2CReadReg8(fd, GYRO_XOUT_H) & 0xFF) << 8;
