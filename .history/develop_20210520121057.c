@@ -96,6 +96,9 @@ void getData(){
     gyroX = read_word_2c(GYRO_XOUT_H);
     gyroY = read_word_2c(GYRO_XOUT_H);
     gyroZ = read_word_2c(GYRO_XOUT_H);
+    printf("AcX %f\t", acclX);
+    printf("AcY %f\t", acclY);
+    printf("AcZ %f\n", acclZ);
 }
 void getDt(){
     now = time(NULL);
@@ -134,8 +137,8 @@ int main()
         angleFY = ALPHA * angleTmpY + (1.0 - ALPHA) * angleAcY;
         angleFZ = angleGyZ; // Z축은 자이로 센서만 이용
 
-        printf("AngleAcX : %6.2f  FilteredX: %6.2f  |  AngleAcY : %6.2f  FilteredY: %6.2f  |  AngleAcZ : %6.2f  FilteredZ: %6.2f\n", angleAcX, angleFX, angleAcY, angleFY, angleAcZ, angleFZ);
-        printf("AngleAcX - FilteredX = %6.2f  |  AngleAcY - FilteredY = %6.2f  |  AngleAcZ - FilteredZ = %6.2f\n\n", fabs(angleAcX - angleFX), fabs(angleAcY - angleFY), fabs(angleAcZ - angleFZ));
+        //printf("FilteredX: %6.2f  |  FilteredY: %6.2f  |  FilteredZ: %6.2f\n", angleFX, angleFY, angleFZ);
+        //printf("dt %d\t", dt);
     }
     return 0;
 }
