@@ -32,7 +32,7 @@ int fd;
 
 void calcDT();
 void initMPU6050();
-short read_raw_data(int);
+void read_raw_data(int);
 void readAccelGyro();
 void calibAccelGyro();
 void calcAccelYPR();

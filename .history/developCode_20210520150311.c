@@ -30,34 +30,6 @@ unsigned long now = 0;  // 현재 시간 저장용 변수
 unsigned long past = 0; // 이전 시간 저장용 변수
 int fd;
 
-void calcDT();
-void initMPU6050();
-short read_raw_data(int);
-void readAccelGyro();
-void calibAccelGyro();
-void calcAccelYPR();
-void calcGyroYPR();
-void calcFilteredYPR();
-
-void main()
-{
-    fd = wiringPiI2CSetup(Device_Address);
-    initMPU6050();
-    calibAccelGyro(); // 안정된 상태에서의 가속도 자이로 값 계산
-
-    past = millis();
-
-    while (1)
-    {
-
-        readAccelGyro();
-        calcDT();
-        calcAccelYPR();
-        calcFilteredYPR();
-        printf("FX : %6.2f | FY : %6.2f | FZ : %6.2f\n", filtered_angle_x, filtered_angle_y, filtered_angle_z);
-    }
-}
-
 void calcDT()
 {
     now = millis();
@@ -152,4 +124,20 @@ void calcFilteredYPR() {
     filtered_angle_y = ALPHA * tmp_angle_y + (1.0 - ALPHA) * accel_angle_y;
     filtered_angle_z = tmp_angle_z;
 }
+void main()
+{
+    fd = wiringPiI2CSetup(Device_Address);
+    initMPU6050();
+    calibAccelGyro(); // 안정된 상태에서의 가속도 자이로 값 계산
 
+    past = millis();
+
+    while(1){
+ 
+        readAccelGyro();
+        calcDT();
+        calcAccelYPR();
+        calcFilteredYPR();
+        printf("FX : %6.2f | FY : %6.2f | FZ : %6.2f\n", filtered_angle_x, filtered_angle_y, filtered_angle_z);
+    }
+}

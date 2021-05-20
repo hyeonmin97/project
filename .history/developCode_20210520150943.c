@@ -30,9 +30,9 @@ unsigned long now = 0;  // 현재 시간 저장용 변수
 unsigned long past = 0; // 이전 시간 저장용 변수
 int fd;
 
-void calcDT();
+void calcDt();
 void initMPU6050();
-short read_raw_data(int);
+void read_raw_data(int);
 void readAccelGyro();
 void calibAccelGyro();
 void calcAccelYPR();
