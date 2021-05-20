@@ -194,12 +194,12 @@ void toLatte(){
         close(c_socket);//실패
     }
     // 원하는 메세지 send
-    n_send = send(c_socket, ????, 크기);
+    n_send = send(c_socket, send_buffer, BUFFER_SIZE);
 
     while(1){
         // 서버단에서 메세지 recv
         n_recv = read(c_socket, recv_buffer, BUFFER_SIZE);
-
+        
         //폰에서 넘어졌다고 확인버튼 누르면 라떼를 통해 값이 넘어오고 그때종료할 조건
         if(strcmp(n_send, ) ){
         }

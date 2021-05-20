@@ -26,11 +26,6 @@
 #define GYRO_YOUT_H 0x45
 #define GYRO_ZOUT_H 0x47
 
-//소켓
-#define PORT 9000
-#define INADDR_ANY "192.168.0.9"
-#define BUFFER_SIZE 2048
-
 float AcX, AcY, AcZ, Tmp, GyX, GyY, GyZ;
 float dt;
 float accel_angle_x, accel_angle_y, accel_angle_z;
@@ -176,33 +171,15 @@ void calcFilteredYPR() {
 }
 
 void toLatte(){
-    int c_socket;
-    struct sockaddr_in c_addr;
+    int c_socket, s_socket;
+    struct sockaddr_in s_addr, c_addr;
     int len;
     int i;
     int sts;
-    char recv_buffer[BUFFER_SIZE];
-    c_socket = socket(PF_INET, SOCK_STREAM, 0);//클라이언트 소켓 생성
 
-    memset(&c_addr, 0, sizeof(c_addr));
-    c_addr.sin_addr.s_addr = htonl(INADDR_ANY);//서버 ip주소 설정
-    c_addr.sin_family = AF_INET;//IPv4 설정
-    c_addr.sin_port = htons(PORT);//포트설정 - 9000
 
-    if(connect(c_socket, (struct sockaddr *)&c_addr, sizeof(c_addr)) == -1)
-    {
-        close(c_socket);//실패
-    }
-    // 원하는 메세지 send
-    n_send = send(c_socket, ????, 크기);
 
-    while(1){
-        // 서버단에서 메세지 recv
-        n_recv = read(c_socket, recv_buffer, BUFFER_SIZE);
 
-        //폰에서 넘어졌다고 확인버튼 누르면 라떼를 통해 값이 넘어오고 그때종료할 조건
-        if(strcmp(n_send, ) ){
-        }
-    }
+
     
 }

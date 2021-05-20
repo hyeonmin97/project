@@ -194,7 +194,7 @@ void toLatte(){
         close(c_socket);//실패
     }
     // 원하는 메세지 send
-    n_send = send(c_socket, ????, 크기);
+    n_send = send(c_socket, ????, BUFFER_SIZE);
 
     while(1){
         // 서버단에서 메세지 recv
