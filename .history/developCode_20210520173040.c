@@ -1,17 +1,3 @@
-/*
-추가해야할 내용 : 
-
-
-
-
-
-
-
-
-*/
-
-
-
 //자이로센서
 #include <wiringPiI2C.h>
 #include <wiringPi.h>
@@ -72,8 +58,6 @@ void toLatte();
 
 void main()
 {
-    connSocket();//라떼-라즈베리 연결부터 하고 시작
-
     fd = wiringPiI2CSetup(Device_Address);
     initMPU6050();
     calibAccelGyro(); // 안정된 상태에서의 가속도 자이로 값 계산
@@ -190,29 +174,25 @@ void calcFilteredYPR() {
     filtered_angle_y = ALPHA * tmp_angle_y + (1.0 - ALPHA) * accel_angle_y;
     filtered_angle_z = tmp_angle_z;
 }
-void connSocket(){
+
+void toLatte(){
     int c_socket;
     struct sockaddr_in c_addr;
     int len;
     int i;
     int sts;
     char recv_buffer[BUFFER_SIZE];
-    c_socket = socket(PF_INET, SOCK_STREAM, 0); //클라이언트 소켓 생성
+    c_socket = socket(PF_INET, SOCK_STREAM, 0);//클라이언트 소켓 생성
 
     memset(&c_addr, 0, sizeof(c_addr));
-    c_addr.sin_addr.s_addr = htonl(INADDR_ANY); //서버 ip주소 설정
-    c_addr.sin_family = AF_INET;                //IPv4 설정
-    c_addr.sin_port = htons(PORT);              //포트설정 - 9000
-    
-    if (connect(c_socket, (struct sockaddr *)&c_addr, sizeof(c_addr)) == -1)
-    {
-        close(c_socket); //실패
-    }
-    printf("소켓 연결 완료\n");
-}
+    c_addr.sin_addr.s_addr = htonl(INADDR_ANY);//서버 ip주소 설정
+    c_addr.sin_family = AF_INET;//IPv4 설정
+    c_addr.sin_port = htons(PORT);//포트설정 - 9000
 
-void toLatte(){
-    
+    if(connect(c_socket, (struct sockaddr *)&c_addr, sizeof(c_addr)) == -1)
+    {
+        close(c_socket);//실패
+    }
     // 원하는 메세지 send
     n_send = send(c_socket, ????, 크기);
 

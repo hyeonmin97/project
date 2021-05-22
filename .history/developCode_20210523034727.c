@@ -1,5 +1,5 @@
 /*
-추가해야할 내용 : 
+추가해야할 내용 : 라떼랑 라즈베리는 처음부터 소켓에 연결되어 있는거로 생각하기
 
 
 
@@ -72,8 +72,6 @@ void toLatte();
 
 void main()
 {
-    connSocket();//라떼-라즈베리 연결부터 하고 시작
-
     fd = wiringPiI2CSetup(Device_Address);
     initMPU6050();
     calibAccelGyro(); // 안정된 상태에서의 가속도 자이로 값 계산
@@ -210,7 +208,6 @@ void connSocket(){
     }
     printf("소켓 연결 완료\n");
 }
-
 void toLatte(){
     
     // 원하는 메세지 send
