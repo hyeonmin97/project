@@ -42,6 +42,7 @@
 
 //소켓
 #define PORT 9000
+#define INADDR_ANY "192.168.0.9"
 #define BUFFER_SIZE 2048
 
 float AcX, AcY, AcZ, Tmp, GyX, GyY, GyZ;
@@ -67,13 +68,13 @@ void calcGyroYPR();
 void calcFilteredYPR();
 
 //소켓
-//void connSocket();
-//void toLatte();
+void connSocket();
+void toLatte();
 
 void main()
 {
     int timeToFall = 0;
-    //connSocket();//라떼-라즈베리 연결부터 하고 시작
+    connSocket();//라떼-라즈베리 연결부터 하고 시작
 
     fd = wiringPiI2CSetup(Device_Address);
     initMPU6050();
@@ -89,12 +90,13 @@ void main()
         calcAccelYPR();
         calcFilteredYPR();
         printf("FX : %6.2f | FY : %6.2f | FZ : %6.2f\n", filtered_angle_x, filtered_angle_y, filtered_angle_z);
-              
+        printf("\n%d\n", timeToFall);
+        
         ////낙상 감지
-        //if (abs((int)filtered_angle_x) > 70) //x축이 70도보다 크면
+        //if (abs((int)filtered_angle_x) > 85)
         //{
-        //    timeToFall++;//넘어짐 지속시간 계산용 변수 증가
-        //    if(timeToFall > 1000){//넘어짐이 일정시간 이상 지속되면, 5초에 600정도 증가
+        //    timeToFall++;
+        //    if(timeToFall > ){//넘어짐이 일정시간 이상 지속되면
         //        toLatte();  //라떼한테 넘어졌다고 알림
         //    }
         //}
@@ -198,39 +200,39 @@ void calcFilteredYPR() {
     filtered_angle_y = ALPHA * tmp_angle_y + (1.0 - ALPHA) * accel_angle_y;
     filtered_angle_z = tmp_angle_z;
 }
-//void connSocket(){
-//    int c_socket;
-//    struct sockaddr_in c_addr;
-//    int len;
-//    int i;
-//    int sts;
-//    char recv_buffer[BUFFER_SIZE];
-//    c_socket = socket(PF_INET, SOCK_STREAM, 0); //클라이언트 소켓 생성
-//
-//    memset(&c_addr, 0, sizeof(c_addr));
-//    c_addr.sin_addr.s_addr = inet_addr("127.0.0.1"); //서버 ip주소 설정, 클라이언트랑, 서버랑 여기 값이 다름
-//    c_addr.sin_family = AF_INET;                //IPv4 설정
-//    c_addr.sin_port = htons(PORT);              //포트설정 - 9000
-//
-//    if (connect(c_socket, (struct sockaddr *)&c_addr, sizeof(c_addr)) == -1)
-//    {
-//        close(c_socket); //실패
-//    }
-//    printf("소켓 연결 완료\n");
-//}
-//
-//void toLatte(){
-//
-//    // 원하는 메세지 send
-//    n_send = send(c_socket, ????, 크기);
-//
-//    while(1){
-//        // 서버단에서 메세지 받음
-//        n_recv = read(c_socket, recv_buffer, BUFFER_SIZE);
-//
-//        //폰에서 넘어졌다고 확인버튼 누르면 라떼를 통해 값이 넘어오고 그때종료할 조건
-//        if(strcmp(n_send, ) ){
-//        }
-//    }
-//
-//}
+void connSocket(){
+    int c_socket;
+    struct sockaddr_in c_addr;
+    int len;
+    int i;
+    int sts;
+    char recv_buffer[BUFFER_SIZE];
+    c_socket = socket(PF_INET, SOCK_STREAM, 0); //클라이언트 소켓 생성
+
+    memset(&c_addr, 0, sizeof(c_addr));
+    c_addr.sin_addr.s_addr = htonl(INADDR_ANY); //서버 ip주소 설정
+    c_addr.sin_family = AF_INET;                //IPv4 설정
+    c_addr.sin_port = htons(PORT);              //포트설정 - 9000
+    
+    if (connect(c_socket, (struct sockaddr *)&c_addr, sizeof(c_addr)) == -1)
+    {
+        close(c_socket); //실패
+    }
+    printf("소켓 연결 완료\n");
+}
+
+void toLatte(){
+    
+    // 원하는 메세지 send
+    n_send = send(c_socket, ????, 크기);
+
+    while(1){
+        // 서버단에서 메세지 받음
+        n_recv = read(c_socket, recv_buffer, BUFFER_SIZE);
+
+        //폰에서 넘어졌다고 확인버튼 누르면 라떼를 통해 값이 넘어오고 그때종료할 조건
+        if(strcmp(n_send, ) ){
+        }
+    }
+    
+}

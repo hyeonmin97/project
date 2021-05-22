@@ -89,18 +89,24 @@ void main()
         calcAccelYPR();
         calcFilteredYPR();
         printf("FX : %6.2f | FY : %6.2f | FZ : %6.2f\n", filtered_angle_x, filtered_angle_y, filtered_angle_z);
-              
-        ////낙상 감지
-        //if (abs((int)filtered_angle_x) > 70) //x축이 70도보다 크면
-        //{
-        //    timeToFall++;//넘어짐 지속시간 계산용 변수 증가
-        //    if(timeToFall > 1000){//넘어짐이 일정시간 이상 지속되면, 5초에 600정도 증가
-        //        toLatte();  //라떼한테 넘어졌다고 알림
-        //    }
-        //}
-        //else{
-        //    timeToFall = 0;
-        //}
+        if (abs((int)filtered_angle_x) > 70)
+        {
+            timeToFall++;
+            
+        }
+        printf("\n%d\n", timeToFall);
+        
+        //낙상 감지
+        if (abs((int)filtered_angle_x) > 70) //x축이 70도보다 크면
+        {
+            timeToFall++;//넘어짐 지속시간 계산용 변수 증가
+            if(timeToFall > 1000){//넘어짐이 일정시간 이상 지속되면, 5초에 600정도 증가
+                toLatte();  //라떼한테 넘어졌다고 알림
+            }
+        }
+        else{
+            timeToFall = 0;
+        }
     }
 }
 
