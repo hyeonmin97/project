@@ -101,9 +101,7 @@ void main()
             timeToFall++;//넘어짐 지속시간 계산용 변수 증가
             if(timeToFall > 50){//넘어짐이 일정시간 이상 지속되면, 5초에 600정도 증가
                 toLatte();  //라떼한테 넘어졌다고 알림
-                timeToFall = 0;
             }
-            
         }
         else{
             timeToFall = 0;

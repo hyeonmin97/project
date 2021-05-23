@@ -21,11 +21,12 @@
 #include <time.h>
 
 //소켓
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/types.h>
+#include <netinet/in.h>
 #include <sys/socket.h>
 #include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
 
 //자이로센서
 #define Device_Address 0x68
@@ -43,9 +44,8 @@
 
 //소켓
 #define PORT 9000
-#define BUF_SIZE 1024
+#define BUFFER_SIZE 2048
 
-//자이로
 float AcX, AcY, AcZ, Tmp, GyX, GyY, GyZ;
 float dt;
 float accel_angle_x, accel_angle_y, accel_angle_z;
@@ -58,6 +58,7 @@ unsigned long now = 0;  // 현재 시간 저장용 변수
 unsigned long past = 0; // 이전 시간 저장용 변수
 int fd;
 
+//자이로
 void calcDT();
 void initMPU6050();
 short read_raw_data(int);
@@ -68,12 +69,8 @@ void calcGyroYPR();
 void calcFilteredYPR();
 
 //소켓
-int sock;
-
-char recv_buffer[BUF_SIZE];
-void error_handling(char*);
 void connSocket();
-void toLatte();
+//void toLatte();
 
 void main()
 {
@@ -85,7 +82,7 @@ void main()
     calibAccelGyro(); // 안정된 상태에서의 가속도 자이로 값 계산
 
     past = millis();
-
+/*
     while (1)
     {
         //센서값 읽기
@@ -95,20 +92,18 @@ void main()
         calcFilteredYPR();
         printf("FX : %6.2f | FY : %6.2f | FZ : %6.2f\n", filtered_angle_x, filtered_angle_y, filtered_angle_z);
               
-        //낙상 감지
-        if (abs((int)filtered_angle_x) > 70) //x축이 70도보다 크면
-        {
-            timeToFall++;//넘어짐 지속시간 계산용 변수 증가
-            if(timeToFall > 50){//넘어짐이 일정시간 이상 지속되면, 5초에 600정도 증가
-                toLatte();  //라떼한테 넘어졌다고 알림
-                timeToFall = 0;
-            }
-            
-        }
-        else{
-            timeToFall = 0;
-        }
-    }
+        ////낙상 감지
+        //if (abs((int)filtered_angle_x) > 70) //x축이 70도보다 크면
+        //{
+        //    timeToFall++;//넘어짐 지속시간 계산용 변수 증가
+        //    if(timeToFall > 1000){//넘어짐이 일정시간 이상 지속되면, 5초에 600정도 증가
+        //        toLatte();  //라떼한테 넘어졌다고 알림
+        //    }
+        //}
+        //else{
+        //    timeToFall = 0;
+        //}
+    }*/
 }
 
 void calcDT()
@@ -206,60 +201,39 @@ void calcFilteredYPR() {
     filtered_angle_z = tmp_angle_z;
 }
 void connSocket(){
-    char send_socket[BUF_SIZE] = {
-        0,
-    };
-    
-    
-    struct sockaddr_in serv_adr;
+    int c_socket;
+    struct sockaddr_in c_addr;
+    int len;
+    int i;
+    int sts;
+    char recv_buffer[BUFFER_SIZE];
+    c_socket = socket(PF_INET, SOCK_STREAM, 0); //클라이언트 소켓 생성
 
-    sock = socket(PF_INET, SOCK_STREAM, 0);
-    if (-1 == sock)
-        error_handling("socket() error");
+    memset(&c_addr, 0, sizeof(c_addr));
+    c_addr.sin_addr.s_addr = inet_addr("192.168.0.9"); //서버 ip주소 설정, 클라이언트랑, 서버랑 여기 값이 다름
+    c_addr.sin_family = AF_INET;                //IPv4 설정
+    c_addr.sin_port = htons(PORT);              //포트설정 - 9000
 
-    memset(&serv_adr, 0, sizeof(serv_adr));
-    serv_adr.sin_family = AF_INET;
-    serv_adr.sin_addr.s_addr = inet_addr("192.168.0.9");
-    serv_adr.sin_port = htons(9000);
-
-    if (-1 == connect(sock, (struct sockaddr *)&serv_adr, sizeof(serv_adr)))
+    if (connect(c_socket, (struct sockaddr *)&c_addr, sizeof(c_addr)) == -1)
     {
-        printf("접속 실패\n");
+        printf("connect fail\n"); //실패
         exit(1);
     }
     printf("connect\n");
-
-    
 }
-void error_handling(char *message){
-    fputs(message, stderr);
-    fputc('\n', stderr);
-    exit(1);
-}
-
+/*
 void toLatte(){
-    int n_recv;
-    char message[BUF_SIZE] = "fallen";
-    write(sock, message, sizeof(message) - 1); // 낙상감지후 라떼로 보냄
-    int a;//삭제할것.
+
+    // 원하는 메세지 send
+    n_send = send(c_socket, "fall", sizeof("fall"));
+
     while(1){
         // 서버단에서 메세지 받음
-        n_recv = read(sock, recv_buffer, BUF_SIZE);
-        printf("%s\n", recv_buffer);
-        if(n_recv>0){
-            //폰에서 넘어졌다고 확인버튼 누르면 라떼를 통해 값이 넘어오고 그때종료할 조건
-            if (!strcmp(recv_buffer, "ok"))
-            {
-                while(1){
-                    printf("input 0 : ");
-                    scanf("%d", &a);
-                    if(a==0)
-                        break;
-                }//ok신호 테스트용 코드
-                break;
-            }
-        }
-        
+        n_recv = read(c_socket, recv_buffer, BUFFER_SIZE);
+
+        //폰에서 넘어졌다고 확인버튼 누르면 라떼를 통해 값이 넘어오고 그때종료할 조건
+        //if(strcmp(n_send, ) ){
+        //}
     }
 
-}
+}*/

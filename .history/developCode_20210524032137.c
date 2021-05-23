@@ -69,11 +69,11 @@ void calcFilteredYPR();
 
 //소켓
 int sock;
-
-char recv_buffer[BUF_SIZE];
+char message[BUF_SIZE] = "fallen";
+char n_recv[BUF_SIZE];
 void error_handling(char*);
 void connSocket();
-void toLatte();
+//void toLatte();
 
 void main()
 {
@@ -85,7 +85,7 @@ void main()
     calibAccelGyro(); // 안정된 상태에서의 가속도 자이로 값 계산
 
     past = millis();
-
+/*
     while (1)
     {
         //센서값 읽기
@@ -95,20 +95,18 @@ void main()
         calcFilteredYPR();
         printf("FX : %6.2f | FY : %6.2f | FZ : %6.2f\n", filtered_angle_x, filtered_angle_y, filtered_angle_z);
               
-        //낙상 감지
-        if (abs((int)filtered_angle_x) > 70) //x축이 70도보다 크면
-        {
-            timeToFall++;//넘어짐 지속시간 계산용 변수 증가
-            if(timeToFall > 50){//넘어짐이 일정시간 이상 지속되면, 5초에 600정도 증가
-                toLatte();  //라떼한테 넘어졌다고 알림
-                timeToFall = 0;
-            }
-            
-        }
-        else{
-            timeToFall = 0;
-        }
-    }
+        ////낙상 감지
+        //if (abs((int)filtered_angle_x) > 70) //x축이 70도보다 크면
+        //{
+        //    timeToFall++;//넘어짐 지속시간 계산용 변수 증가
+        //    if(timeToFall > 1000){//넘어짐이 일정시간 이상 지속되면, 5초에 600정도 증가
+        //        toLatte();  //라떼한테 넘어졌다고 알림
+        //    }
+        //}
+        //else{
+        //    timeToFall = 0;
+        //}
+    }*/
 }
 
 void calcDT()
@@ -238,28 +236,16 @@ void error_handling(char *message){
 }
 
 void toLatte(){
-    int n_recv;
-    char message[BUF_SIZE] = "fallen";
+
     write(sock, message, sizeof(message) - 1); // 낙상감지후 라떼로 보냄
-    int a;//삭제할것.
+
     while(1){
         // 서버단에서 메세지 받음
-        n_recv = read(sock, recv_buffer, BUF_SIZE);
-        printf("%s\n", recv_buffer);
-        if(n_recv>0){
-            //폰에서 넘어졌다고 확인버튼 누르면 라떼를 통해 값이 넘어오고 그때종료할 조건
-            if (!strcmp(recv_buffer, "ok"))
-            {
-                while(1){
-                    printf("input 0 : ");
-                    scanf("%d", &a);
-                    if(a==0)
-                        break;
-                }//ok신호 테스트용 코드
-                break;
-            }
+        n_recv = read(sock, recv_buffer, BUFFER_SIZE);
+
+        //폰에서 넘어졌다고 확인버튼 누르면 라떼를 통해 값이 넘어오고 그때종료할 조건
+        if(strcmp(n_recv, "ok")){
         }
-        
     }
 
 }

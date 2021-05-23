@@ -69,7 +69,7 @@ void calcFilteredYPR();
 
 //소켓
 int sock;
-
+char message[BUF_SIZE] = "fallen";
 char recv_buffer[BUF_SIZE];
 void error_handling(char*);
 void connSocket();
@@ -99,11 +99,9 @@ void main()
         if (abs((int)filtered_angle_x) > 70) //x축이 70도보다 크면
         {
             timeToFall++;//넘어짐 지속시간 계산용 변수 증가
-            if(timeToFall > 50){//넘어짐이 일정시간 이상 지속되면, 5초에 600정도 증가
+            if(timeToFall > 1000){//넘어짐이 일정시간 이상 지속되면, 5초에 600정도 증가
                 toLatte();  //라떼한테 넘어졌다고 알림
-                timeToFall = 0;
             }
-            
         }
         else{
             timeToFall = 0;
@@ -239,27 +237,16 @@ void error_handling(char *message){
 
 void toLatte(){
     int n_recv;
-    char message[BUF_SIZE] = "fallen";
     write(sock, message, sizeof(message) - 1); // 낙상감지후 라떼로 보냄
-    int a;//삭제할것.
+
     while(1){
         // 서버단에서 메세지 받음
         n_recv = read(sock, recv_buffer, BUF_SIZE);
-        printf("%s\n", recv_buffer);
-        if(n_recv>0){
-            //폰에서 넘어졌다고 확인버튼 누르면 라떼를 통해 값이 넘어오고 그때종료할 조건
-            if (!strcmp(recv_buffer, "ok"))
-            {
-                while(1){
-                    printf("input 0 : ");
-                    scanf("%d", &a);
-                    if(a==0)
-                        break;
-                }//ok신호 테스트용 코드
-                break;
-            }
+
+        //폰에서 넘어졌다고 확인버튼 누르면 라떼를 통해 값이 넘어오고 그때종료할 조건
+        if(strcmp(recv_buffer, "ok")){
+            break;
         }
-        
     }
 
 }
