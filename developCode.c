@@ -69,7 +69,6 @@ void calcFilteredYPR();
 
 //소켓
 int sock;
-
 char recv_buffer[BUF_SIZE];
 void error_handling(char*);
 void connSocket();
@@ -78,8 +77,7 @@ void toLatte();
 void main()
 {
     int timeToFall = 0;
-    connSocket();//라떼-라즈베리 연결부터 하고 시작
-
+   
     fd = wiringPiI2CSetup(Device_Address);
     initMPU6050();
     calibAccelGyro(); // 안정된 상태에서의 가속도 자이로 값 계산
@@ -94,13 +92,15 @@ void main()
         calcAccelYPR();
         calcFilteredYPR();
         printf("FX : %6.2f | FY : %6.2f | FZ : %6.2f\n", filtered_angle_x, filtered_angle_y, filtered_angle_z);
-              
+            
         //낙상 감지
         if (abs((int)filtered_angle_x) > 70) //x축이 70도보다 크면
         {
+			printf("sensor fall\n");
             timeToFall++;//넘어짐 지속시간 계산용 변수 증가
             if(timeToFall > 50){//넘어짐이 일정시간 이상 지속되면, 5초에 600정도 증가
-                toLatte();  //라떼한테 넘어졌다고 알림
+				printf("send to latte\n");
+				toLatte();  //라떼한테 넘어졌다고 알림
                 timeToFall = 0;
             }
             
@@ -212,7 +212,7 @@ void connSocket(){
     
     
     struct sockaddr_in serv_adr;
-
+	printf("in connSocket()\n");
     sock = socket(PF_INET, SOCK_STREAM, 0);
     if (-1 == sock)
         error_handling("socket() error");
@@ -227,7 +227,7 @@ void connSocket(){
         printf("접속 실패\n");
         exit(1);
     }
-    printf("connect\n");
+    printf("socket connect\n");
 
     
 }
@@ -238,24 +238,22 @@ void error_handling(char *message){
 }
 
 void toLatte(){
+	connSocket();//라떼-라즈베리 연결부터 하고 시작
+
+    printf("in toLatte()\n");
     int n_recv;
     char message[BUF_SIZE] = "fallen";
     write(sock, message, sizeof(message) - 1); // 낙상감지후 라떼로 보냄
-    int a;//삭제할것.
+    
     while(1){
         // 서버단에서 메세지 받음
         n_recv = read(sock, recv_buffer, BUF_SIZE);
-        printf("%s\n", recv_buffer);
+        
         if(n_recv>0){
+            printf("%s\n", recv_buffer);
             //폰에서 넘어졌다고 확인버튼 누르면 라떼를 통해 값이 넘어오고 그때종료할 조건
-            if (!strcmp(recv_buffer, "ok"))
+            if (!strncmp(recv_buffer, "btn",3))
             {
-                while(1){
-                    printf("input 0 : ");
-                    scanf("%d", &a);
-                    if(a==0)
-                        break;
-                }//ok신호 테스트용 코드
                 break;
             }
         }
