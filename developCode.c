@@ -27,6 +27,10 @@
 #include <sys/socket.h>
 #include <string.h>
 
+//Serial
+#include <termios.h>
+#include <fcntl.h>
+
 //자이로센서
 #define Device_Address 0x68
 #define PWR_MGMT_1 0x6B
@@ -67,17 +71,25 @@ void calcAccelYPR();
 void calcGyroYPR();
 void calcFilteredYPR();
 
-//소켓
-int sock;
-char recv_buffer[BUF_SIZE];
-void error_handling(char*);
-void connSocket();
-void toLatte();
+//
+////소켓
+//int sock;
+//char recv_buffer[BUF_SIZE];
+//void error_handling(char*);
+//void connSocket();
+//void toLatte();
+
+//시리얼
+int serialFd;
+void connSerial();
+void serialSend();
+void serialRead();
 
 void main()
 {
+    connSerial();//시리얼 연결하고 시작
     int timeToFall = 0;
-   
+    
     fd = wiringPiI2CSetup(Device_Address);
     initMPU6050();
     calibAccelGyro(); // 안정된 상태에서의 가속도 자이로 값 계산
@@ -96,11 +108,13 @@ void main()
         //낙상 감지
         if (abs((int)filtered_angle_x) > 70) //x축이 70도보다 크면
         {
-			printf("sensor fall\n");
+            printf("fall detection\n");
             timeToFall++;//넘어짐 지속시간 계산용 변수 증가
             if(timeToFall > 50){//넘어짐이 일정시간 이상 지속되면, 5초에 600정도 증가
 				printf("send to latte\n");
-				toLatte();  //라떼한테 넘어졌다고 알림
+                serialSend();//시리얼 통신으로 라떼에 넘어졌다고 알림
+                serialRead();//시리얼 통신으로 라떼에서 문자열 받음
+                //tcflush(serialFd, TCIOFLUSH);
                 timeToFall = 0;
             }
             
@@ -191,7 +205,7 @@ void calcGyroYPR() {
     gyro_x = (GyX - baseGyX) / GYROXYZ_TO_DEGREES_PER_SEC;
     gyro_y = (GyY - baseGyY) / GYROXYZ_TO_DEGREES_PER_SEC;
     gyro_z = (GyZ - baseGyZ) / GYROXYZ_TO_DEGREES_PER_SEC;
-    //자이로 센서의 값이 각속도로 나옴
+    //자이로 센서의 값을 각속도로 매핑
 }
 void calcFilteredYPR() {
     const float ALPHA = 0.96;
@@ -203,6 +217,7 @@ void calcFilteredYPR() {
     filtered_angle_y = ALPHA * tmp_angle_y + (1.0 - ALPHA) * accel_angle_y;
     filtered_angle_z = tmp_angle_z;
 }
+/*
 void connSocket(){
     char send_socket[BUF_SIZE] = {
         0,
@@ -229,11 +244,6 @@ void connSocket(){
     printf("socket connect\n");
 
 }
-void error_handling(char *message){
-    fputs(message, stderr);
-    fputc('\n', stderr);
-    exit(1);
-}
 
 void toLatte(){
 	connSocket();//라떼-라즈베리 연결부터 하고 시작
@@ -259,3 +269,61 @@ void toLatte(){
     }
 
 }
+*/
+
+void connSerial(){
+    serialFd = open("/dev/ttyAMA1", O_RDWR | O_NOCTTY | O_NDELAY);
+    printf("open serial\n");
+    if (serialFd == -1)
+    { // ERROR - CAN'T OPEN SERIAL PORT
+        printf("Error - Unable to open UART. Ensure it is not in use by another application\n");
+    }
+    struct termios options;
+    tcgetattr(serialFd, &options);
+    options.c_cflag = B115200 | CS8 | CLOCAL | CREAD; //제어모드 
+    //options.c_iflag = IGNPAR; //입력모드, IGNPAR 패리티 오류 있는 모든 바이트 무시
+    options.c_oflag = 0;//출력모드 
+    options.c_lflag = 0;//로컬모드
+    options.c_cc[VTIME] = 0;//read()가 기다리고 있을 시간
+
+    tcflush(serialFd, TCIFLUSH); //시리얼 포트 초기화
+
+    tcsetattr(serialFd, TCSANOW, &options);//시리얼 포트에 설정 입력
+}
+
+void serialSend()
+{
+    char* p_tx_buffer = "fallen";
+    int count = write(serialFd, (void*)p_tx_buffer, strlen(p_tx_buffer)); //Filestream, bytes to write, number of bytes to write
+    
+    if (count < 0)
+    {
+        printf("UART TX error\n");
+    }
+    printf("end send\n");
+    //sleep(2);//flush 하기 전 딜레이
+    //tcflush(serialFd, TCOFLUSH);
+}
+
+void serialRead()
+{
+    char rx_buffer[256];
+    int rx_length=-1;
+    while (1)
+    {
+        rx_length = read(serialFd, (void *)rx_buffer, sizeof(rx_buffer));
+        if(rx_length>0){
+            rx_buffer[rx_length] = '\0';//문자열에 \n추가
+            //tcflush(serialFd, TCIFLUSH);
+            break;
+        }
+    }
+}
+
+void error_handling(char *message){
+    fputs(message, stderr);
+    fputc('\n', stderr);
+    exit(1);
+}
+
+
