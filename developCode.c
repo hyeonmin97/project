@@ -191,14 +191,12 @@ void calcGyroYPR() {
     gyro_x = (GyX - baseGyX) / GYROXYZ_TO_DEGREES_PER_SEC;
     gyro_y = (GyY - baseGyY) / GYROXYZ_TO_DEGREES_PER_SEC;
     gyro_z = (GyZ - baseGyZ) / GYROXYZ_TO_DEGREES_PER_SEC;
-    gyro_angle_x += gyro_x * dt;
-    gyro_angle_y += gyro_y * dt;
-    gyro_angle_z += gyro_z * dt;
+    //자이로 센서의 값이 각속도로 나옴
 }
 void calcFilteredYPR() {
     const float ALPHA = 0.96;
     float tmp_angle_x, tmp_angle_y, tmp_angle_z;
-    tmp_angle_x = filtered_angle_x + gyro_x * dt;
+    tmp_angle_x = filtered_angle_x + gyro_x * dt;//각속도에서 각도로 변환
     tmp_angle_y = filtered_angle_y + gyro_y * dt;
     tmp_angle_z = filtered_angle_z + gyro_z * dt;
     filtered_angle_x = ALPHA * tmp_angle_x + (1.0 - ALPHA) * accel_angle_x;
@@ -219,8 +217,9 @@ void connSocket(){
 
     memset(&serv_adr, 0, sizeof(serv_adr));
     serv_adr.sin_family = AF_INET;
-    serv_adr.sin_addr.s_addr = inet_addr("192.168.0.9");
+    serv_adr.sin_addr.s_addr = inet_addr("192.168.151.49");
     serv_adr.sin_port = htons(9000);
+
 
     if (-1 == connect(sock, (struct sockaddr *)&serv_adr, sizeof(serv_adr)))
     {
@@ -229,7 +228,6 @@ void connSocket(){
     }
     printf("socket connect\n");
 
-    
 }
 void error_handling(char *message){
     fputs(message, stderr);
