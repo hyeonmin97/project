@@ -1,16 +1,6 @@
 /*
 추가해야할 내용 : 
-
-
-
-
-
-
-
-
 */
-
-
 
 //자이로센서
 #include <wiringPiI2C.h>
@@ -87,9 +77,9 @@ void serialRead();
 
 void main()
 {
-    connSerial();//시리얼 연결하고 시작
+    connSerial(); //시리얼 연결하고 시작
     int timeToFall = 0;
-    
+
     fd = wiringPiI2CSetup(Device_Address);
     initMPU6050();
     calibAccelGyro(); // 안정된 상태에서의 가속도 자이로 값 계산
@@ -102,24 +92,26 @@ void main()
         readAccelGyro();
         calcDT();
         calcAccelYPR();
+        calcGyroYPR();
         calcFilteredYPR();
         printf("FX : %6.2f | FY : %6.2f | FZ : %6.2f\n", filtered_angle_x, filtered_angle_y, filtered_angle_z);
-            
+
         //낙상 감지
         if (abs((int)filtered_angle_x) > 70) //x축이 70도보다 크면
         {
             printf("fall detection\n");
-            timeToFall++;//넘어짐 지속시간 계산용 변수 증가
-            if(timeToFall > 50){//넘어짐이 일정시간 이상 지속되면, 5초에 600정도 증가
-				printf("send to latte\n");
-                serialSend();//시리얼 통신으로 라떼에 넘어졌다고 알림
-                serialRead();//시리얼 통신으로 라떼에서 문자열 받음
+            timeToFall++; //넘어짐 지속시간 계산용 변수 증가
+            if (timeToFall > 50)
+            { //넘어짐이 일정시간 이상 지속되면, 5초에 600정도 증가
+                printf("send to latte\n");
+                serialSend(); //시리얼 통신으로 라떼에 넘어졌다고 알림
+                serialRead(); //시리얼 통신으로 라떼에서 문자열 받음
                 //tcflush(serialFd, TCIOFLUSH);
                 timeToFall = 0;
             }
-            
         }
-        else{
+        else
+        {
             timeToFall = 0;
         }
     }
@@ -135,8 +127,8 @@ void initMPU6050()
 {
     wiringPiI2CWriteReg8(fd, SMPLRT_DIV, 0x07); /* Write to sample rate register */
     wiringPiI2CWriteReg8(fd, PWR_MGMT_1, 0x01); /* Write to power management register */
-    wiringPiI2CWriteReg8(fd, CONFIG, 0);        /* Write to Configuration register */
-    wiringPiI2CWriteReg8(fd, GYRO_CONFIG, 24);  /* Write to Gyro Configuration register */
+    wiringPiI2CWriteReg8(fd, CONFIG, 0); /* Write to Configuration register */           //디지털 필터 사용안함
+    wiringPiI2CWriteReg8(fd, GYRO_CONFIG, 8); /* Write to Gyro Configuration register */ //fs_sel = 1 => +- 1000 도/초, 범위가 작으면 섬세하게, 범위가 넓으면 큰 각도변화
     wiringPiI2CWriteReg8(fd, INT_ENABLE, 0x01); /*Write to interrupt enable register */
 }
 short read_raw_data(int addr)
@@ -157,7 +149,6 @@ void readAccelGyro()
     GyX = read_raw_data(GYRO_XOUT_H);
     GyY = read_raw_data(GYRO_YOUT_H);
     GyZ = read_raw_data(GYRO_ZOUT_H);
-    
 }
 void calibAccelGyro()
 {
@@ -200,17 +191,19 @@ void calcAccelYPR()
     accel_angle_x = atan(accel_y / accel_xz) * RADIANS_TO_DEGREES;
     accel_angle_z = 0;
 }
-void calcGyroYPR() {
-    const float GYROXYZ_TO_DEGREES_PER_SEC = 131;
+void calcGyroYPR()
+{
+    const float GYROXYZ_TO_DEGREES_PER_SEC = 65;
     gyro_x = (GyX - baseGyX) / GYROXYZ_TO_DEGREES_PER_SEC;
     gyro_y = (GyY - baseGyY) / GYROXYZ_TO_DEGREES_PER_SEC;
     gyro_z = (GyZ - baseGyZ) / GYROXYZ_TO_DEGREES_PER_SEC;
     //자이로 센서의 값을 각속도로 매핑
 }
-void calcFilteredYPR() {
+void calcFilteredYPR()
+{
     const float ALPHA = 0.96;
     float tmp_angle_x, tmp_angle_y, tmp_angle_z;
-    tmp_angle_x = filtered_angle_x + gyro_x * dt;//각속도에서 각도로 변환
+    tmp_angle_x = filtered_angle_x + gyro_x * dt; //각속도에서 각도로 변환
     tmp_angle_y = filtered_angle_y + gyro_y * dt;
     tmp_angle_z = filtered_angle_z + gyro_z * dt;
     filtered_angle_x = ALPHA * tmp_angle_x + (1.0 - ALPHA) * accel_angle_x;
@@ -229,25 +222,19 @@ void connSocket(){
     sock = socket(PF_INET, SOCK_STREAM, 0);
     if (-1 == sock)
         error_handling("socket() error");
-
     memset(&serv_adr, 0, sizeof(serv_adr));
     serv_adr.sin_family = AF_INET;
     serv_adr.sin_addr.s_addr = inet_addr("192.168.151.49");
     serv_adr.sin_port = htons(9000);
-
-
     if (-1 == connect(sock, (struct sockaddr *)&serv_adr, sizeof(serv_adr)))
     {
         printf("접속 실패\n");
         exit(1);
     }
     printf("socket connect\n");
-
 }
-
 void toLatte(){
 	connSocket();//라떼-라즈베리 연결부터 하고 시작
-
     printf("in toLatte()\n");
     int n_recv;
     char message[BUF_SIZE] = "fallen";
@@ -267,11 +254,11 @@ void toLatte(){
         }
         
     }
-
 }
 */
 
-void connSerial(){
+void connSerial()
+{
     serialFd = open("/dev/ttyAMA1", O_RDWR | O_NOCTTY | O_NDELAY);
     printf("open serial\n");
     if (serialFd == -1)
@@ -280,22 +267,22 @@ void connSerial(){
     }
     struct termios options;
     tcgetattr(serialFd, &options);
-    options.c_cflag = B115200 | CS8 | CLOCAL | CREAD; //제어모드 
+    options.c_cflag = B115200 | CS8 | CLOCAL | CREAD; //제어모드
     //options.c_iflag = IGNPAR; //입력모드, IGNPAR 패리티 오류 있는 모든 바이트 무시
-    options.c_oflag = 0;//출력모드 
-    options.c_lflag = 0;//로컬모드
-    options.c_cc[VTIME] = 0;//read()가 기다리고 있을 시간
+    options.c_oflag = 0;     //출력모드
+    options.c_lflag = 0;     //로컬모드
+    options.c_cc[VTIME] = 0; //read()가 기다리고 있을 시간
 
     tcflush(serialFd, TCIFLUSH); //시리얼 포트 초기화
 
-    tcsetattr(serialFd, TCSANOW, &options);//시리얼 포트에 설정 입력
+    tcsetattr(serialFd, TCSANOW, &options); //시리얼 포트에 설정 입력
 }
 
 void serialSend()
 {
-    char* p_tx_buffer = "fallen";
-    int count = write(serialFd, (void*)p_tx_buffer, strlen(p_tx_buffer)); //Filestream, bytes to write, number of bytes to write
-    
+    char *p_tx_buffer = "fallen";
+    int count = write(serialFd, (void *)p_tx_buffer, strlen(p_tx_buffer)); //Filestream, bytes to write, number of bytes to write
+
     if (count < 0)
     {
         printf("UART TX error\n");
@@ -308,22 +295,22 @@ void serialSend()
 void serialRead()
 {
     char rx_buffer[256];
-    int rx_length=-1;
+    int rx_length = -1;
     while (1)
     {
         rx_length = read(serialFd, (void *)rx_buffer, sizeof(rx_buffer));
-        if(rx_length>0){
-            rx_buffer[rx_length] = '\0';//문자열에 \n추가
+        if (rx_length > 0)
+        {
+            rx_buffer[rx_length] = '\0'; //문자열에 \n추가
             //tcflush(serialFd, TCIFLUSH);
             break;
         }
     }
 }
 
-void error_handling(char *message){
+void error_handling(char *message)
+{
     fputs(message, stderr);
     fputc('\n', stderr);
     exit(1);
 }
-
-
