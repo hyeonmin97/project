@@ -1,13 +1,11 @@
 #include "ultrasonic.h"
 
-int ultra;
-unsigned long now = 0; // 현재 시간 저장용 변수
-extern unsigned long past;
+
 //------------초음파 스레드-----------------
-void *thread_ultrasonic_left()
+void* thread_ultrasonic()
 {
     int busyPin = 25;
-    
+    int ultra;
     int vib1 = 24;
     
     uint8_t cfg = 0, cmd = 0;
@@ -16,6 +14,7 @@ void *thread_ultrasonic_left()
     ultra = wiringPiI2CSetup(ULTRA_ADDRESS);
     pinMode(busyPin, INPUT);
     pinMode(vib1, OUTPUT);
+    pinMode(vib2, OUTPUT);
 
     //cfg &= ~MEASURE_RANGE_BIT; //clear bit4,long-range ranging mode
     //printf("cfg 1 : %u \n", cfg);

@@ -1,13 +1,11 @@
 #include "ultrasonic.h"
 
-int ultra;
-unsigned long now = 0; // 현재 시간 저장용 변수
-extern unsigned long past;
+
 //------------초음파 스레드-----------------
 void *thread_ultrasonic_left()
 {
     int busyPin = 25;
-    
+    int ultra;
     int vib1 = 24;
     
     uint8_t cfg = 0, cmd = 0;

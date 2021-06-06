@@ -1,8 +1,9 @@
 #include "ultrasonic.h"
 
 int ultra;
-unsigned long now = 0; // 현재 시간 저장용 변수
-extern unsigned long past;
+unsigned long now = 0;  // 현재 시간 저장용 변수
+unsigned long past = 0; // 이전 시간 저장용 변수
+
 //------------초음파 스레드-----------------
 void *thread_ultrasonic_left()
 {
